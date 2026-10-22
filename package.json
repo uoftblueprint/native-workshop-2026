@@ -1,0 +1,54 @@
+{
+  "name": "mobile-lab",
+  "main": "expo-router/entry",
+  "version": "1.0.0",
+  "dependencies": {
+    "expo": "~57.0.31",
+    "expo-camera": "~57.0.6",
+    "expo-constants": "~57.0.22",
+    "expo-glass-effect": "~57.0.4",
+    "expo-haptics": "~57.0.3",
+    "expo-linking": "~57.0.13",
+    "expo-router": "~57.0.29",
+    "expo-sensors": "~57.0.3",
+    "expo-splash-screen": "~57.0.10",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "~0.21.0",
+    "react-native-worklets": "0.10.1"
+  },
+  "devDependencies": {
+    "@types/jest": "29.5.14",
+    "@types/react": "~19.2.2",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "~57.0.2",
+    "jest": "~29.7.0",
+    "jest-expo": "~57.0.6",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:level": "jest features/level",
+    "test:receipt": "jest features/receipt-scanner",
+    "test:lights": "jest features/lights",
+    "check": "npm run typecheck && npm run lint && npm test"
+  },
+  "jest": {
+    "preset": "jest-expo"
+  },
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "private": true
+}
