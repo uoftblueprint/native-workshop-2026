@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import * as Haptics from "expo-haptics";
+import { Accelerometer } from "expo-sensors";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -8,19 +10,27 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import * as Haptics from 'expo-haptics';
-import { Accelerometer } from 'expo-sensors';
-import { GlassCard } from '../components/GlassCard';
-import { ScreenHeader } from '../components/ScreenHeader';
-import { WorkshopButton } from '../components/WorkshopButton';
-import { isLightboxConfigured } from '../config/workshop';
-import { createLight, deleteLight, setLightPower, triggerDisco, type Light } from '../features/lights/lightApi';
-import { clearSavedLight, loadSavedLight, saveLight } from '../features/lights/savedLight';
-import { isShake } from '../features/lights/shake';
+} from "react-native";
+import { GlassCard } from "../components/GlassCard";
+import { ScreenHeader } from "../components/ScreenHeader";
+import { WorkshopButton } from "../components/WorkshopButton";
+import { isLightboxConfigured } from "../config/workshop";
+import {
+  createLight,
+  deleteLight,
+  setLightPower,
+  triggerDisco,
+  type Light,
+} from "../features/lights/lightApi";
+import {
+  clearSavedLight,
+  loadSavedLight,
+  saveLight,
+} from "../features/lights/savedLight";
+import { isShake } from "../features/lights/shake";
 
 export default function LightsScreen() {
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [light, setLight] = useState<Light | null>(null);
   const [remembered, setRemembered] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -41,10 +51,15 @@ export default function LightsScreen() {
 
     try {
       await triggerDisco(light.id);
-      setNote('Disco sent');
+      setNote("Disco sent");
       setTimeout(() => setNote(null), 1600);
     } catch (caught) {
-      setError(readableError(caught, "Can't reach the workshop server. Check your connection and try again."));
+      setError(
+        readableError(
+          caught,
+          "Can't reach the workshop server. Check your connection and try again.",
+        ),
+      );
     }
   }, [light]);
 
@@ -77,7 +92,9 @@ export default function LightsScreen() {
         if (!active) return;
 
         if (!permission.granted) {
-          setSensorNote('Motion permission needed before shake can start disco mode.');
+          setSensorNote(
+            "Motion permission needed before shake can start disco mode.",
+          );
           return;
         }
 
@@ -85,7 +102,7 @@ export default function LightsScreen() {
         if (!active) return;
 
         if (!available) {
-          setSensorNote('Shake needs a physical phone with a motion sensor.');
+          setSensorNote("Shake needs a physical phone with a motion sensor.");
           return;
         }
 
@@ -95,14 +112,14 @@ export default function LightsScreen() {
           if (coolingDown.current) return;
 
           if (isShake(reading.x, reading.y, reading.z)) {
-            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            void playShakeHaptic();
             void onDisco();
             beginCooldown();
           }
         });
       } catch {
         if (active) {
-          setSensorNote('Shake needs a physical phone with a motion sensor.');
+          setSensorNote("Shake needs a physical phone with a motion sensor.");
         }
       }
     }
@@ -120,7 +137,7 @@ export default function LightsScreen() {
 
     const trimmed = name.trim();
     if (!trimmed) {
-      setError('Give your light a name first.');
+      setError("Give your light a name first.");
       return;
     }
 
@@ -130,17 +147,22 @@ export default function LightsScreen() {
     try {
       created = await createLight(trimmed);
     } catch (caught) {
-      setError(readableError(caught, "Can't reach the workshop server. Check your connection and try again."));
+      setError(
+        readableError(
+          caught,
+          "Can't reach the workshop server. Check your connection and try again.",
+        ),
+      );
       setBusy(false);
       return;
     }
 
     setLight(created);
-    setName('');
+    setName("");
     try {
       await saveLight(created);
     } catch {
-      setError('The light was added, but this phone could not remember it.');
+      setError("The light was added, but this phone could not remember it.");
     } finally {
       setBusy(false);
     }
@@ -155,7 +177,12 @@ export default function LightsScreen() {
     try {
       updated = await setLightPower(light.id, !light.isOn);
     } catch (caught) {
-      setError(readableError(caught, "Can't reach the workshop server. Check your connection and try again."));
+      setError(
+        readableError(
+          caught,
+          "Can't reach the workshop server. Check your connection and try again.",
+        ),
+      );
       setBusy(false);
       return;
     }
@@ -164,7 +191,7 @@ export default function LightsScreen() {
     try {
       await saveLight(updated);
     } catch {
-      setError('The light changed, but this phone could not remember it.');
+      setError("The light changed, but this phone could not remember it.");
     } finally {
       setBusy(false);
     }
@@ -178,7 +205,12 @@ export default function LightsScreen() {
     try {
       await deleteLight(light.id);
     } catch (caught) {
-      setError(readableError(caught, "Can't reach the workshop server. Check your connection and try again."));
+      setError(
+        readableError(
+          caught,
+          "Can't reach the workshop server. Check your connection and try again.",
+        ),
+      );
       setBusy(false);
       return;
     }
@@ -187,7 +219,7 @@ export default function LightsScreen() {
     try {
       await clearSavedLight();
     } catch {
-      setError('The light was removed, but this phone could not forget it.');
+      setError("The light was removed, but this phone could not forget it.");
     } finally {
       setBusy(false);
     }
@@ -199,8 +231,12 @@ export default function LightsScreen() {
         <View style={styles.column}>
           <ScreenHeader title="Lightbox" />
           <View style={styles.message}>
-            <Text style={styles.messageTitle}>{"Lightbox isn't configured yet"}</Text>
-            <Text style={styles.messageBody}>Ask your workshop instructor for help.</Text>
+            <Text style={styles.messageTitle}>
+              {"Lightbox isn't configured yet"}
+            </Text>
+            <Text style={styles.messageBody}>
+              Ask your workshop instructor for help.
+            </Text>
           </View>
         </View>
       </View>
@@ -216,7 +252,7 @@ export default function LightsScreen() {
         />
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <ScrollView
             contentContainerStyle={styles.scroll}
@@ -228,10 +264,15 @@ export default function LightsScreen() {
             ) : light ? (
               <GlassCard style={styles.card}>
                 <Text style={styles.lightName}>{light.name}</Text>
-                <View style={[styles.lamp, light.isOn ? styles.lampOn : styles.lampOff]} />
-                <Text style={styles.power}>{light.isOn ? 'ON' : 'OFF'}</Text>
+                <View
+                  style={[
+                    styles.lamp,
+                    light.isOn ? styles.lampOn : styles.lampOff,
+                  ]}
+                />
+                <Text style={styles.power}>{light.isOn ? "ON" : "OFF"}</Text>
                 <WorkshopButton
-                  label={light.isOn ? 'TURN OFF' : 'TURN ON'}
+                  label={light.isOn ? "TURN OFF" : "TURN ON"}
                   onPress={() => void onToggle()}
                   disabled={busy}
                 />
@@ -245,7 +286,9 @@ export default function LightsScreen() {
                 >
                   <Text style={styles.removeLabel}>Remove light</Text>
                 </Pressable>
-                {sensorNote ? <Text style={styles.note}>{sensorNote}</Text> : null}
+                {sensorNote ? (
+                  <Text style={styles.note}>{sensorNote}</Text>
+                ) : null}
                 {note ? <Text style={styles.note}>{note}</Text> : null}
               </GlassCard>
             ) : (
@@ -265,7 +308,7 @@ export default function LightsScreen() {
                   onSubmitEditing={() => void onCreate()}
                 />
                 <WorkshopButton
-                  label={busy ? 'Adding...' : 'Add Light'}
+                  label={busy ? "Adding..." : "Add Light"}
                   onPress={() => void onCreate()}
                   disabled={busy}
                 />
@@ -279,8 +322,29 @@ export default function LightsScreen() {
   );
 }
 
+async function playShakeHaptic() {
+  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  await wait(80);
+  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  await wait(80);
+  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  await wait(80);
+  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  await wait(80);
+  await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function readableError(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message.includes('has not been implemented yet')) {
+  if (
+    error instanceof Error &&
+    error.message.includes("has not been implemented yet")
+  ) {
     return error.message;
   }
   return fallback;
@@ -289,12 +353,12 @@ function readableError(error: unknown, fallback: string) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#E8EDF2',
-    alignItems: 'center',
+    backgroundColor: "#E8EDF2",
+    alignItems: "center",
   },
   column: {
     flex: 1,
-    width: '100%',
+    width: "100%",
     maxWidth: 480,
   },
   flex: {
@@ -311,56 +375,56 @@ const styles = StyleSheet.create({
   },
   kicker: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 1.2,
-    color: '#3A3A3C',
+    color: "#3A3A3C",
   },
   prompt: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: -0.4,
-    color: '#1C1C1E',
+    color: "#1C1C1E",
   },
   input: {
     minHeight: 52,
     borderRadius: 14,
     paddingHorizontal: 16,
-    backgroundColor: 'rgba(255,255,255,0.72)',
+    backgroundColor: "rgba(255,255,255,0.72)",
     fontSize: 17,
-    color: '#1C1C1E',
+    color: "#1C1C1E",
   },
   lightName: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: -0.4,
-    color: '#1C1C1E',
+    color: "#1C1C1E",
   },
   lamp: {
     width: 84,
     height: 84,
     borderRadius: 42,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   lampOff: {
-    backgroundColor: '#D1D1D6',
+    backgroundColor: "#D1D1D6",
   },
   lampOn: {
-    backgroundColor: '#FFD60A',
-    shadowColor: '#FFD60A',
+    backgroundColor: "#FFD60A",
+    shadowColor: "#FFD60A",
     shadowOpacity: 0.8,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 0 },
   },
   power: {
     fontSize: 42,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: -1,
-    color: '#1C1C1E',
+    color: "#1C1C1E",
   },
   hint: {
     fontSize: 16,
     lineHeight: 22,
-    color: '#3A3A3C',
+    color: "#3A3A3C",
   },
   remove: {
     alignSelf: 'flex-start',
@@ -374,7 +438,7 @@ const styles = StyleSheet.create({
   note: {
     fontSize: 15,
     lineHeight: 21,
-    color: '#5E6470',
+    color: "#5E6470",
   },
   message: {
     paddingHorizontal: 20,
@@ -383,17 +447,17 @@ const styles = StyleSheet.create({
   },
   messageTitle: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#1C1C1E',
+    fontWeight: "700",
+    color: "#1C1C1E",
   },
   messageBody: {
     fontSize: 16,
     lineHeight: 22,
-    color: '#3A3A3C',
+    color: "#3A3A3C",
   },
   error: {
     fontSize: 15,
     lineHeight: 21,
-    color: '#9B3A2F',
+    color: "#9B3A2F",
   },
 });
