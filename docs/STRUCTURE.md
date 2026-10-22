@@ -19,7 +19,7 @@ UI that more than one screen can use: cards, buttons, the header, and simple ico
 Logic for each exercise, kept separate from the screen. These files are easier to test because they do not need a phone.
 
 - `features/level` converts motion into degrees and decides when the phone is level.
-- `features/receipt-scanner` takes the photo and runs the mocked receipt reading.
+- `features/receipt-scanner` takes the photo and runs the mocked receipt reading. A real cloud reader is an optional extra in the README, not part of the TODOs.
 - `features/lights` talks to the lightbox API and decides what counts as a shake.
 
 ## assets/

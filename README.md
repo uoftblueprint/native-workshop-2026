@@ -287,6 +287,36 @@ Check it:
 
 Shake the phone. You should feel a tap, and your light on the projector should enter disco mode.
 
+## Extra: read the receipt for real
+
+Skip this until the three receipt TODOs work. There is no test for it, and the workshop does not require it.
+
+`mockAnalyzeReceipt` ignores the photo and always returns Workshop Cafe and $14.82. That is on purpose. This extra replaces that fake reading with a cloud reader, so the store and the total come from the picture.
+
+On-device text recognition needs a custom native build, so it does not run in Expo Go. A cloud reader does. The phone sends the photo to an HTTP API, the API returns the words it saw, and your code picks out the merchant and the total.
+
+Do this:
+
+1. Finish the camera TODOs first. The photo has to be real.
+2. Shrink the JPEG before you upload it. A full camera photo is larger than it needs to be.
+3. `POST` the image with `fetch`.
+4. Read the text in the response and find the store name and the total. Ignore subtotal lines.
+5. Return `{ merchant, total }` from a function with the same shape as `mockAnalyzeReceipt`, and call that from the screen instead.
+
+Any of these readers will work:
+
+- [OCR.space](https://ocr.space/ocrapi) is the small version. Create a free key, then `POST` the image to `https://api.ocr.space/parse/image`. The response is one block of text. You find the store and the total yourself.
+- [Google Cloud Vision](https://cloud.google.com/vision/docs/ocr) is the usual Google OCR API. Call `images:annotate` with `DOCUMENT_TEXT_DETECTION`. You still find the total yourself. The project needs the Vision API turned on, plus billing.
+- [Document AI](https://cloud.google.com/document-ai/docs/processors-list) has an expense parser that returns the merchant and the total as fields. That is the receipt-shaped Google API. It takes more setup than Vision.
+
+Keep the key off the phone if you can. A Google key inside the Expo app can be copied out of the project. The better place is the workshop server: the phone `POST`s the photo to something like `/api/receipts`, and that server calls Google and returns `{ merchant, total }`. For one day, an OCR.space key can live in `config/workshop.ts` next to the lightbox URL. Rotate it after the workshop.
+
+The photo leaves the phone. Do not scan a receipt that shows a full card number.
+
+Check it:
+
+Photograph a flat, bright paper receipt with the total in frame. The screen should show that store and that total. Glare, folds, and a cropped total are what make it miss.
+
 ## If something breaks
 
 Run the full check:
