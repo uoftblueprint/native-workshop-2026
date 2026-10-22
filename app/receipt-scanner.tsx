@@ -9,8 +9,6 @@ import {
   mockAnalyzeReceipt,
   type ReceiptResult,
 } from '../features/receipt-scanner/mockAnalyzeReceipt';
-import { notUsedYet } from '../features/notUsedYet';
-
 export default function ReceiptScannerScreen() {
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
@@ -23,17 +21,7 @@ export default function ReceiptScannerScreen() {
   async function onRequestPermission() {
     setError(null);
     try {
-      // TODO RECEIPT 1
-      // Ask for camera access.
-      //
-      // Hints:
-      // - requestPermission comes from useCameraPermissions.
-      // - Call it. You do not need to store the result yourself.
-      // - The screen already chooses what to show from permission.
-      //
-      // Delete the next line when you call requestPermission.
-      notUsedYet(requestPermission);
-      throw new Error('TODO RECEIPT 1 has not been implemented yet.');
+      await requestPermission();
     } catch (caught) {
       setError(readableError(caught, 'We could not ask for camera access. Try again.'));
     }
@@ -43,17 +31,10 @@ export default function ReceiptScannerScreen() {
     setError(null);
     setBusy(true);
     try {
-      // TODO RECEIPT 3
-      // Take the photo, show it, then show the mocked receipt.
-      //
-      // Hints:
-      // - cameraFromRef(cameraRef) gives you the camera, or null if it is not ready.
-      // - captureReceipt returns a uri. setPhotoUri shows that photo.
-      // - mockAnalyzeReceipt takes the uri and returns the merchant and total. Save it with setReceipt.
-      //
-      // Delete the next line when you use these.
-      notUsedYet(cameraFromRef, cameraRef, captureReceipt, mockAnalyzeReceipt, setPhotoUri, setReceipt);
-      throw new Error('TODO RECEIPT 3 has not been implemented yet.');
+      const uri = await captureReceipt(cameraFromRef(cameraRef));
+      setPhotoUri(uri);
+      const result = await mockAnalyzeReceipt(uri);
+      setReceipt(result);
     } catch (caught) {
       setError(readableError(caught, 'Could not scan that receipt. Try again.'));
     } finally {

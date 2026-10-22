@@ -6,7 +6,6 @@ import * as Haptics from 'expo-haptics';
 import { DeviceMotion } from 'expo-sensors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { calculateLevelDegrees, isLevel } from '../features/level/level';
-import { notUsedYet } from '../features/notUsedYet';
 
 export default function LevelScreen() {
   const insets = useSafeAreaInsets();
@@ -39,16 +38,10 @@ export default function LevelScreen() {
         DeviceMotion.setUpdateInterval(100);
 
         subscription = DeviceMotion.addListener((event) => {
-          // TODO LEVEL 1
-          // Save the left-to-right tilt.
-          //
-          // Hints:
-          // - event.rotation.gamma is that tilt, in radians.
-          // - Pass the number to setRollRadians.
-          // - If gamma is missing, skip this update.
-          //
-          // Delete the next line when you use event and setRollRadians.
-          notUsedYet(event, setRollRadians);
+          const gamma = event.rotation?.gamma;
+          if (typeof gamma === 'number') {
+            setRollRadians(gamma);
+          }
         });
       } catch {
         if (active) {
@@ -71,16 +64,9 @@ export default function LevelScreen() {
     const degrees = calculateLevelDegrees(rollRadians);
     const nowLevel = isLevel(degrees);
 
-    // TODO LEVEL 4
-    // Play one haptic when the phone changes from not level to level.
-    //
-    // Hints:
-    // - wasLevelRef.current is the previous result.
-    // - Haptics.impactAsync plays a single tap. ImpactFeedbackStyle has Light, Medium, and Heavy.
-    // - Leave the line below the TODO alone. It remembers this reading so the tap does not repeat.
-    //
-    // Delete the next line when you use nowLevel, wasLevelRef, and Haptics.
-    notUsedYet(nowLevel, wasLevelRef, Haptics);
+    if (nowLevel && !wasLevelRef.current) {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
 
     wasLevelRef.current = nowLevel;
   }, [rollRadians]);

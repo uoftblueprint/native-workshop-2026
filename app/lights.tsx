@@ -18,7 +18,6 @@ import { isLightboxConfigured } from '../config/workshop';
 import { createLight, deleteLight, setLightPower, triggerDisco, type Light } from '../features/lights/lightApi';
 import { clearSavedLight, loadSavedLight, saveLight } from '../features/lights/savedLight';
 import { isShake } from '../features/lights/shake';
-import { notUsedYet } from '../features/notUsedYet';
 
 export default function LightsScreen() {
   const [name, setName] = useState('');
@@ -95,16 +94,11 @@ export default function LightsScreen() {
         subscription = Accelerometer.addListener((reading) => {
           if (coolingDown.current) return;
 
-          // TODO LIGHTS 4
-          // When the phone shakes, tap once and start disco mode.
-          //
-          // Hints:
-          // - isShake takes reading.x, reading.y, and reading.z.
-          // - Haptics.impactAsync plays one tap.
-          // - Call onDisco(), then beginCooldown() so one shake does not fire many times.
-          //
-          // Delete the next line when you use these.
-          notUsedYet(reading, isShake, Haptics, onDisco, beginCooldown);
+          if (isShake(reading.x, reading.y, reading.z)) {
+            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            void onDisco();
+            beginCooldown();
+          }
         });
       } catch {
         if (active) {
