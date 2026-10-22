@@ -261,9 +261,9 @@ Look for:
 
 Hints:
 
-- A still phone is not a zero reading. Gravity keeps the combined strength near 1.
-- Use `x`, `y`, and `z` together. A shake may be spread across them, and some numbers are negative.
-- Pick a threshold that ignores a small bump and catches a real shake.
+- `strength` is already filled in. It squares `x`, `y`, and `z`, adds those squares, then takes the square root.
+- Squaring drops the sign, so a negative axis still counts. A shake spread across the axes still adds up.
+- A still phone is near 1, because of gravity. `threshold` starts at 0, which treats that as a shake. Raise it to a number a bit above 1 so a small bump stays false.
 
 Check it:
 

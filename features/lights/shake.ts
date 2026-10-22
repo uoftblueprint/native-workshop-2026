@@ -3,8 +3,11 @@ export function isShake(x: number, y: number, z: number) {
   // Return true only for a hard shake.
   //
   // Hints:
-  // - A still phone is not all zeros. Gravity keeps the combined strength near 1.
-  // - Use x, y, and z together. A shake can be spread across the axes, and some values are negative.
-  // - Compare that combined strength with a threshold clearly above 1. A small bump should return false.
-  return false;
+  // - strength squares x, y, and z, adds those squares, then takes the square root.
+  // - Squaring drops the sign. A negative axis still counts, and a shake spread across the axes still adds up.
+  // - A still phone is near 1, because of gravity. threshold is 0, so gravity currently counts as a shake.
+  // - Raise threshold to a number a bit above 1. A small bump should stay false.
+  const strength = Math.sqrt(x * x + y * y + z * z);
+  const threshold = 0;
+  return strength > threshold;
 }

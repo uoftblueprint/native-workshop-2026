@@ -22,7 +22,7 @@ describe('isShake', () => {
   it('treats a hard shake across the axes as a shake', () => {
     check(
       isShake(1.4, -1.3, 1.2),
-      'That reading is a real shake spread across x, y, and z. Some values are negative. Combine the axes, then compare with a threshold above normal gravity.',
+      'That reading is a real shake spread across x, y, and z. Square each value, add the squares, take the square root, and compare that with a threshold above normal gravity. A negative axis still counts.',
     );
   });
 });
