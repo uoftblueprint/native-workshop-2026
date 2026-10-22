@@ -20,7 +20,7 @@ Logic for each exercise, kept separate from the screen. These files are easier t
 
 - `features/level` converts motion into degrees and decides when the phone is level.
 - `features/receipt-scanner` takes the photo and runs the mocked receipt reading. A real cloud reader is an optional extra in the README, not part of the TODOs.
-- `features/lights` talks to the lightbox API and decides what counts as a shake.
+- `features/lights` talks to the lightbox API, remembers the one light saved on this phone, and decides what counts as a shake.
 
 ## assets/
 

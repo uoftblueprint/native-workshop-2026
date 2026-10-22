@@ -193,6 +193,8 @@ Take a photo of anything. You should see the picture, then Workshop Cafe and $14
 
 This talks to a workshop server that puts a light on the projector. You do not configure the URL. If the screen says it is not configured, ask the instructor.
 
+This phone keeps one light. After you add it, leave the screen and come back. The same light should still be there. Remove light deletes it, and then you can add a different one. You do not write that part.
+
 Open:
 
 `app/lights.tsx`

@@ -45,7 +45,8 @@
         {
           "motionPermission": "Allow Mobile Lab to read device motion for the level and shake controls."
         }
-      ]
+      ],
+      "expo-secure-store"
     ]
   }
 }

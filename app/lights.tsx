@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,13 +15,15 @@ import { GlassCard } from '../components/GlassCard';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { WorkshopButton } from '../components/WorkshopButton';
 import { isLightboxConfigured } from '../config/workshop';
-import { createLight, setLightPower, triggerDisco, type Light } from '../features/lights/lightApi';
+import { createLight, deleteLight, setLightPower, triggerDisco, type Light } from '../features/lights/lightApi';
+import { clearSavedLight, loadSavedLight, saveLight } from '../features/lights/savedLight';
 import { isShake } from '../features/lights/shake';
 import { notUsedYet } from '../features/notUsedYet';
 
 export default function LightsScreen() {
   const [name, setName] = useState('');
   const [light, setLight] = useState<Light | null>(null);
+  const [remembered, setRemembered] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -45,6 +48,23 @@ export default function LightsScreen() {
       setError(readableError(caught, "Can't reach the workshop server. Check your connection and try again."));
     }
   }, [light]);
+
+  useEffect(() => {
+    let active = true;
+
+    loadSavedLight()
+      .then((saved) => {
+        if (!active) return;
+        if (saved) setLight(saved);
+      })
+      .finally(() => {
+        if (active) setRemembered(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!light) return;
@@ -102,6 +122,8 @@ export default function LightsScreen() {
   }, [light, onDisco, beginCooldown]);
 
   async function onCreate() {
+    if (light) return;
+
     const trimmed = name.trim();
     if (!trimmed) {
       setError('Give your light a name first.');
@@ -110,11 +132,21 @@ export default function LightsScreen() {
 
     setBusy(true);
     setError(null);
+    let created: Light;
     try {
-      const created = await createLight(trimmed);
-      setLight(created);
+      created = await createLight(trimmed);
     } catch (caught) {
       setError(readableError(caught, "Can't reach the workshop server. Check your connection and try again."));
+      setBusy(false);
+      return;
+    }
+
+    setLight(created);
+    setName('');
+    try {
+      await saveLight(created);
+    } catch {
+      setError('The light was added, but this phone could not remember it.');
     } finally {
       setBusy(false);
     }
@@ -125,11 +157,43 @@ export default function LightsScreen() {
 
     setBusy(true);
     setError(null);
+    let updated: Light;
     try {
-      const updated = await setLightPower(light.id, !light.isOn);
-      setLight(updated);
+      updated = await setLightPower(light.id, !light.isOn);
     } catch (caught) {
       setError(readableError(caught, "Can't reach the workshop server. Check your connection and try again."));
+      setBusy(false);
+      return;
+    }
+
+    setLight(updated);
+    try {
+      await saveLight(updated);
+    } catch {
+      setError('The light changed, but this phone could not remember it.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onDelete() {
+    if (!light) return;
+
+    setBusy(true);
+    setError(null);
+    try {
+      await deleteLight(light.id);
+    } catch (caught) {
+      setError(readableError(caught, "Can't reach the workshop server. Check your connection and try again."));
+      setBusy(false);
+      return;
+    }
+
+    setLight(null);
+    try {
+      await clearSavedLight();
+    } catch {
+      setError('The light was removed, but this phone could not forget it.');
     } finally {
       setBusy(false);
     }
@@ -152,7 +216,10 @@ export default function LightsScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.column}>
-        <ScreenHeader title="Lightbox" />
+        <ScreenHeader
+          title="Lightbox"
+          subtitle="This phone keeps one light. Leave and come back, and it is still here."
+        />
         <KeyboardAvoidingView
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -162,7 +229,9 @@ export default function LightsScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {light ? (
+            {!remembered ? (
+              <Text style={styles.hint}>Looking for your light...</Text>
+            ) : light ? (
               <GlassCard style={styles.card}>
                 <Text style={styles.lightName}>{light.name}</Text>
                 <View style={[styles.lamp, light.isOn ? styles.lampOn : styles.lampOff]} />
@@ -173,6 +242,15 @@ export default function LightsScreen() {
                   disabled={busy}
                 />
                 <Text style={styles.hint}>Shake your phone for disco mode</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Remove light"
+                  disabled={busy}
+                  onPress={() => void onDelete()}
+                  style={styles.remove}
+                >
+                  <Text style={styles.removeLabel}>Remove light</Text>
+                </Pressable>
                 {sensorNote ? <Text style={styles.note}>{sensorNote}</Text> : null}
                 {note ? <Text style={styles.note}>{note}</Text> : null}
               </GlassCard>
@@ -289,6 +367,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     color: '#3A3A3C',
+  },
+  remove: {
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+  },
+  removeLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#9B3A2F',
   },
   note: {
     fontSize: 15,

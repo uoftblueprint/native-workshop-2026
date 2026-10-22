@@ -1,4 +1,4 @@
-import { createLight, setLightPower } from './lightApi';
+import { createLight, deleteLight, setLightPower } from './lightApi';
 
 function check(condition: boolean, message: string) {
   if (!condition) {
@@ -188,5 +188,40 @@ describe('setLightPower', () => {
 
     check(body.isOn === false, 'Turning a light off should send { isOn: false }, not a hardcoded true.');
     check(light?.isOn === false, 'setLightPower should return the light from the response when it turns off.');
+  });
+});
+
+describe('deleteLight', () => {
+  it('sends DELETE for that light', async () => {
+    const fetchMock = jest.fn(async () => ({ ok: true, status: 204 }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    await deleteLight('light-7');
+
+    const { url, options } = requestParts(fetchMock);
+    check(url.includes('/api/lights/light-7'), 'deleteLight should request /api/lights/ plus the light id.');
+    check(!url.includes('/disco'), 'deleteLight removes the light. It should not call the disco path.');
+    check(options.method?.toUpperCase() === 'DELETE', 'deleteLight should send a DELETE request.');
+  });
+
+  it('treats a missing light as already removed', async () => {
+    const fetchMock = jest.fn(async () => ({ ok: false, status: 404 }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    await deleteLight('light-7');
+    check(fetchMock.mock.calls.length === 1, 'deleteLight should call fetch once.');
+  });
+
+  it('throws when the server responds with an error', async () => {
+    globalThis.fetch = jest.fn(async () => ({ ok: false, status: 500 })) as unknown as typeof fetch;
+
+    let threw = false;
+    try {
+      await deleteLight('light-7');
+    } catch {
+      threw = true;
+    }
+
+    check(threw, 'If the server responds with an error, deleteLight should throw.');
   });
 });

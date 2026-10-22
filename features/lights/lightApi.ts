@@ -51,3 +51,13 @@ export async function triggerDisco(id: string) {
     throw new Error('The workshop server returned an error.');
   }
 }
+
+export async function deleteLight(id: string) {
+  const response = await fetch(workshopUrl(`/api/lights/${id}`), {
+    method: 'DELETE',
+  });
+
+  if (!response.ok && response.status !== 404) {
+    throw new Error('The workshop server returned an error.');
+  }
+}
