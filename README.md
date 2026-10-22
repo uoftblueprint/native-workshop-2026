@@ -72,14 +72,6 @@ Hints:
 - `Math.PI` is built in.
 - Keep the sign. Tilting left and right should not both become positive.
 
-Check it:
-
-```bash
-npm run test:level
-```
-
-The big number should stop saying 999 and start following the phone.
-
 ### TODO 3
 
 Decide when the phone is close enough to zero to call it level.
